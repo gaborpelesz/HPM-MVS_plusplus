@@ -15,6 +15,7 @@ import os
 import argparse
 import shutil
 import cv2
+from tqdm.contrib.concurrent import process_map
 
 #============================ read_model.py ============================#
 CameraModel = collections.namedtuple(
@@ -402,9 +403,8 @@ def processing_single_scene(args):
         for j in range(i + 1, len(images)):
             queue.append((i, j))
 
-    p = mp.Pool(processes=mp.cpu_count())
     func = partial(calc_score, images=images, points3d=points3d, args=args, extrinsic=extrinsic)
-    result = p.map(func, queue)
+    result = process_map(func, queue, max_workers=8, chunksize=512)
     for i, j, s in result:
         score[i, j] = s
         score[j, i] = s
