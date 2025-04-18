@@ -1,6 +1,8 @@
 #include "main.h"
 #include "HPM.h"
 
+#include <filesystem>
+
 void GenerateSampleList(const std::string& dense_folder, std::vector<Problem>& problems)
 {
 	std::string cluster_list_path = dense_folder + std::string("/pair.txt");
@@ -78,7 +80,7 @@ void ProcessProblem(const std::string& dense_folder, const std::vector<Problem>&
 	std::stringstream result_path;
 	result_path << dense_folder << "/HPM_MVS_plusplus" << "/2333_" << std::setw(8) << std::setfill('0') << problem.ref_image_id;
 	std::string result_folder = result_path.str();
-	mkdir(result_folder.c_str());
+	std::filesystem::create_directories(result_folder);
 
 	HPM hpm;
 	if (geom_consistency) {
@@ -412,7 +414,7 @@ void ProcessProblem(const std::string& dense_folder, const std::vector<Problem>&
 			priordepths_upsample.release();
 			priornormals_upsample.release();
 			mask_tri_new.release();
-			delete(prior_planeParams);
+			delete[] prior_planeParams;
 		}
 
 		for (int col = 0; col < width; ++col) {
@@ -947,7 +949,7 @@ int main(int argc, char** argv)
 	GenerateSampleList(dense_folder, problems);
 
 	std::string output_folder = dense_folder + std::string("/HPM_MVS_plusplus");
-	mkdir(output_folder.c_str());
+	std::filesystem::create_directories(output_folder);
 
 	size_t num_images = problems.size();
 	std::cout << "There are " << num_images << " problems needed to be processed!" << std::endl;

@@ -1,6 +1,7 @@
 #include "HPM.h"
 
 #include <cstdarg>
+#include <filesystem>
 
 void StringAppendV(std::string* dst, const char* format, va_list ap) {
 	// First try with a small fixed size buffer.
@@ -507,7 +508,7 @@ static float GetDisparity(const Camera& camera, const int2& p, const float& dept
 	float point3D[3];
 	point3D[0] = depth * (p.x - camera.K[2]) / camera.K[0];
 	point3D[1] = depth * (p.y - camera.K[5]) / camera.K[4];
-	point3D[3] = depth;
+	point3D[2] = depth;
 
 	return std::sqrt(point3D[0] * point3D[0] + point3D[1] * point3D[1] + point3D[2] * point3D[2]);
 }
@@ -562,9 +563,9 @@ void HPM::CudaSpaceRelease(bool geom_consistency)
 void HPM::ReleaseProblemHostMemory() {
 	//delete(plane_hypotheses_host);
 	//delete(costs_host);
-	images.swap(std::vector<cv::Mat>());
-	cameras.swap(std::vector<Camera>());
-	depths.swap(std::vector<cv::Mat>());
+	images = std::vector<cv::Mat>();
+	cameras = std::vector<Camera>();
+	depths = std::vector<cv::Mat>();
 	std::cout << "Releasing Host memory..." << std::endl;
 }
 
@@ -872,7 +873,7 @@ void HPM::CudaCannyInitialization(const cv::Mat_<int>& Canny) {
 		}
 	}
 	cudaMemcpy(Canny_cuda, Canny_host, sizeof(unsigned int) * (cameras[0].height * cameras[0].width), cudaMemcpyHostToDevice);
-	delete(Canny_host);
+	delete[] Canny_host;
 	Canny_host = NULL;
 }
 
@@ -881,7 +882,7 @@ void HPM::CudaConfidenceInitialization(const std::string& dense_folder, const st
 	std::stringstream result_path;
 	result_path << dense_folder << "/HPM_MVS_plusplus" << "/2333_" << std::setw(8) << std::setfill('0') << problem.ref_image_id;
 	std::string result_folder = result_path.str();
-	std::string confidence_path = result_folder + "/Confidence.dmb";
+	std::string confidence_path = result_folder + "/confidence.dmb";
 	cv::Mat_<float>confidences;
 	confidences_host = new float[cameras[0].height * cameras[0].width];
 	readDepthDmb(confidence_path, confidences);
@@ -1263,7 +1264,7 @@ void RunJBU(const cv::Mat_<float>& scaled_image_float, const cv::Mat_<float>& sr
 	std::stringstream result_path;
 	result_path << dense_folder << "/HPM_MVS_plusplus" << "/2333_" << std::setw(8) << std::setfill('0') << problem.ref_image_id;
 	std::string result_folder = result_path.str();
-	mkdir(result_folder.c_str());
+	std::filesystem::create_directories(result_folder);
 	std::string depth_path = result_folder + "/depths.dmb";
 	writeDepthDmb(depth_path, disp0);
 
