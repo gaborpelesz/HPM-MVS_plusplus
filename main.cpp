@@ -934,15 +934,18 @@ void ConfidenceEvaluation(std::string& dense_folder, const std::vector<Problem>&
 int main(int argc, char** argv)
 {
 	if (argc < 2) {
-		std::cout << "USAGE: HPM-MVS_plusplus dense_folder true/flase(mask defualt: flase)" << std::endl;
+		std::cout << "USAGE: HPM-MVS_plusplus dense_folder true/flase(mask defualt: false)" << std::endl;
 		return -1;
 	}
 
 	std::string dense_folder = argv[1];
-	std::string mask = argv[2];
+
 	bool mask_flag = false;
-	if (mask == "true") {
-		mask_flag = true;
+	if (argc > 2) {
+		std::string mask = argv[2];
+		if (mask == "true") {
+			mask_flag = true;
+		}
 	}
 
 	std::vector<Problem> problems;
