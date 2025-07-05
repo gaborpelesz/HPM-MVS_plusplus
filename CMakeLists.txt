@@ -15,7 +15,7 @@ else()
 endif()
 
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED core imgproc imgcodecs)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-pthread)
